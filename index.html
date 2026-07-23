@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tejas · The Sky Reading</title>
+<meta name="description" content="A birth reading for Tejas. Fall through your own sky.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0c0a;
+  --paper:#f5f0e8;
+  --gold:#c9a84c;
+  --rust:#b85c38;
+  --teal:#3a7d74;
+  --paper-dim:rgba(245,240,232,.62);
+  --paper-faint:rgba(245,240,232,.34);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink);
+  color:var(--paper);
+  font-family:'Cormorant Garamond', Georgia, serif;
+  font-weight:300;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* starfield canvas */
+#sky{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;
+}
+
+/* grain */
+body::after{
+  content:"";position:fixed;inset:-50%;z-index:3;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  animation:grain 9s steps(6) infinite;
+}
+@keyframes grain{
+  0%,100%{transform:translate(0,0)}
+  20%{transform:translate(-4%,3%)}
+  40%{transform:translate(3%,-5%)}
+  60%{transform:translate(-3%,4%)}
+  80%{transform:translate(5%,-2%)}
+}
+
+main{position:relative;z-index:1}
+
+.chapter{
+  min-height:100svh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  padding:18vh 8vw;
+  position:relative;
+}
+
+.eyebrow{
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;letter-spacing:.35em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:2.2rem;
+}
+.line{
+  font-size:clamp(1.35rem,5.6vw,2rem);
+  line-height:1.5;
+  max-width:22ch;
+  margin:0 auto .9rem;
+  opacity:0;transform:translateY(26px);
+  transition:opacity 1.3s ease, transform 1.3s ease;
+  will-change:opacity,transform;
+}
+.line.small{font-size:clamp(1rem,4vw,1.25rem);color:var(--paper-dim)}
+.line.mono{
+  font-family:'DM Mono',monospace;
+  font-size:clamp(.72rem,3vw,.85rem);
+  letter-spacing:.18em;color:var(--gold);
+}
+.line.italic{font-style:italic}
+.chapter.lit .line{opacity:1;transform:translateY(0)}
+.chapter.lit .line:nth-of-type(1){transition-delay:.1s}
+.chapter.lit .line:nth-of-type(2){transition-delay:.9s}
+.chapter.lit .line:nth-of-type(3){transition-delay:1.7s}
+.chapter.lit .line:nth-of-type(4){transition-delay:2.5s}
+.chapter.lit .line:nth-of-type(5){transition-delay:3.3s}
+.chapter.lit .line:nth-of-type(6){transition-delay:4.1s}
+.chapter.lit .eyebrow{opacity:1;transform:none;transition-delay:0s}
+.eyebrow{opacity:0;transform:translateY(14px);transition:opacity 1s ease,transform 1s ease}
+
+.symbol{
+  opacity:0;transform:translateY(30px) scale(.94);
+  transition:opacity 1.6s ease .6s, transform 1.6s ease .6s;
+  margin:2.4rem auto 0;
+  will-change:transform,opacity;
+}
+.chapter.lit .symbol{opacity:1;transform:translateY(0) scale(1)}
+
+/* hero */
+#hero{justify-content:center}
+.hero-name{
+  font-size:clamp(3.4rem,17vw,6.5rem);
+  font-weight:300;letter-spacing:.22em;
+  padding-left:.22em; /* balance tracking */
+  color:var(--paper);
+}
+.hero-equals{
+  font-family:'DM Mono',monospace;
+  font-size:clamp(.75rem,3.4vw,.95rem);
+  letter-spacing:.3em;color:var(--gold);
+  margin-top:1.6rem;
+}
+.scroll-cue{
+  position:absolute;bottom:calc(2rem + env(safe-area-inset-bottom));
+  left:50%;transform:translateX(-50%);
+  font-family:'DM Mono',monospace;font-size:.6rem;
+  letter-spacing:.3em;color:var(--paper-faint);
+  animation:cue 2.6s ease-in-out infinite;
+}
+@keyframes cue{0%,100%{opacity:.35;transform:translate(-50%,0)}50%{opacity:.9;transform:translate(-50%,8px)}}
+
+/* the wheel */
+#wheelwrap{width:min(72vw,300px);perspective:800px}
+#wheel{width:100%;height:auto;display:block;will-change:transform}
+.wheel-caption{
+  font-family:'DM Mono',monospace;font-size:.62rem;
+  letter-spacing:.28em;color:var(--gold);margin-top:1.4rem;
+  text-transform:uppercase;
+}
+
+/* symbols */
+.rune,.mountain,.cross,.cups{width:min(46vw,180px);height:auto}
+svg .stroke{stroke:var(--gold);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+svg .fillg{fill:var(--gold)}
+
+/* dasha timeline */
+.timeline{
+  margin:2.6rem auto 0;
+  display:flex;flex-direction:column;gap:0;
+  align-items:flex-start;text-align:left;
+  opacity:0;transition:opacity 1.4s ease .6s;
+}
+.chapter.lit .timeline{opacity:1}
+.tl-row{
+  display:flex;align-items:flex-start;gap:1rem;
+  opacity:0;transform:translateX(-14px);
+  transition:opacity 1s ease,transform 1s ease;
+}
+.chapter.lit .tl-row{opacity:1;transform:none}
+.chapter.lit .tl-row:nth-child(1){transition-delay:.8s}
+.chapter.lit .tl-row:nth-child(2){transition-delay:1.5s}
+.chapter.lit .tl-row:nth-child(3){transition-delay:2.2s}
+.chapter.lit .tl-row:nth-child(4){transition-delay:2.9s}
+.tl-track{display:flex;flex-direction:column;align-items:center}
+.tl-dot{width:9px;height:9px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:6px}
+.tl-stem{width:1px;flex:1;min-height:44px;background:linear-gradient(var(--gold),rgba(201,168,76,.15))}
+.tl-row:last-child .tl-stem{display:none}
+.tl-body{padding-bottom:1.6rem}
+.tl-years{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.22em;color:var(--gold)}
+.tl-name{font-size:1.25rem;margin-top:.15rem}
+.tl-note{font-size:.95rem;color:var(--paper-dim);font-style:italic;margin-top:.15rem;max-width:24ch}
+.tl-row.now .tl-dot{background:var(--rust);box-shadow:0 0 12px rgba(184,92,56,.8)}
+
+/* ending */
+#end .keyline{
+  font-size:clamp(1.6rem,6.5vw,2.4rem);
+  font-style:italic;line-height:1.45;max-width:16ch;
+}
+.forest{
+  position:absolute;bottom:0;left:0;right:0;height:26svh;
+  pointer-events:none;opacity:0;transition:opacity 2.5s ease 1s;
+}
+.chapter.lit .forest{opacity:1}
+.forest svg{width:100%;height:100%;display:block}
+
+footer{
+  position:relative;z-index:1;
+  text-align:center;
+  padding:3rem 8vw calc(3rem + env(safe-area-inset-bottom));
+  border-top:1px solid rgba(201,168,76,.25);
+}
+footer p{font-size:.95rem;color:var(--paper-faint);font-style:italic;margin-bottom:1.2rem}
+footer a{
+  font-family:'DM Mono',monospace;font-size:.62rem;
+  letter-spacing:.22em;color:var(--gold);
+  text-decoration:none;margin:0 .7rem;text-transform:uppercase;
+}
+footer a:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
+
+/* depth layers */
+.deep{transform-style:preserve-3d}
+.parallax-slow{will-change:transform}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  body::after{animation:none}
+  .line,.symbol,.eyebrow,.timeline,.tl-row,.forest{
+    opacity:1 !important;transform:none !important;transition:none !important;
+  }
+  .scroll-cue{animation:none;opacity:.6}
+  #wheel{transform:rotate(-31deg) !important}
+}
+</style>
+</head>
+<body>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<main>
+
+<!-- 1 · NAME -->
+<section class="chapter" id="hero" aria-label="Tejas">
+  <h1 class="hero-name line">TEJAS</h1>
+  <p class="hero-equals line">55 · HEAVEN · SKY</p>
+  <p class="line small italic">Your name and the sky add up to the same number.</p>
+  <div class="scroll-cue">SCROLL SLOWLY</div>
+</section>
+
+<!-- 2 · THE RISING -->
+<section class="chapter" aria-label="The rising sign">
+  <div class="eyebrow">Where you begin</div>
+  <p class="line">You rise in Leo.</p>
+  <p class="line small">4°50', in Magha. The throne star of the ancestors.</p>
+  <p class="line small italic">You were built to be seen, even when you hide.</p>
+</section>
+
+<!-- 3 · THE MOON -->
+<section class="chapter" aria-label="The moon">
+  <div class="eyebrow">Where you feel</div>
+  <p class="line">Your Moon sits deep in Scorpio.</p>
+  <p class="line small">6°35', Anuradha. Saturn sits beside it.</p>
+  <p class="line small italic">You feel everything. You show almost nothing. Loyalty is your religion.</p>
+</section>
+
+<!-- 4 · THE WHEEL -->
+<section class="chapter" aria-label="The last degree">
+  <div class="eyebrow">The last degree</div>
+  <p class="line">Your Sun stands at 29° Pisces.</p>
+  <p class="line small">The final degree of the final sign. Jupiter beside it, in Uttara Bhadrapada, in the eighth house.</p>
+  <div class="symbol" id="wheelwrap">
+    <svg id="wheel" viewBox="0 0 200 200" role="img" aria-label="A gold zodiac wheel, marker at 29 degrees Pisces">
+      <circle cx="100" cy="100" r="92" fill="none" stroke="#c9a84c" stroke-width="1.2"/>
+      <circle cx="100" cy="100" r="70" fill="none" stroke="#c9a84c" stroke-width="0.7" opacity="0.6"/>
+      <circle cx="100" cy="100" r="30" fill="none" stroke="#c9a84c" stroke-width="0.7" opacity="0.4"/>
+      <g id="spokes" stroke="#c9a84c" stroke-width="0.7" opacity="0.7"></g>
+      <g id="ticks" stroke="#c9a84c" stroke-width="0.5" opacity="0.45"></g>
+      <!-- marker at top -->
+      <circle cx="100" cy="8" r="3.4" fill="#b85c38"/>
+      <circle cx="100" cy="8" r="6.5" fill="none" stroke="#b85c38" stroke-width="0.8" opacity="0.6"/>
+      <text x="100" y="112" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#c9a84c" letter-spacing="2">29° ♓</text>
+    </svg>
+  </div>
+  <div class="wheel-caption">An old soul finishing a very long story</div>
+</section>
+
+<!-- 5 · THE NUMBERS -->
+<section class="chapter" aria-label="The numbers">
+  <div class="eyebrow">Your numbers</div>
+  <p class="line mono">LIFE PATH 3 · EXPRESSION 4 · SOUL 9</p>
+  <p class="line small">The 4 comes through 13. A karmic number. Work that must be finished honestly, not skipped.</p>
+  <p class="line small italic">Joy on the surface. Duty in the bones. An old giver underneath.</p>
+  <p class="line small">At maturity, everything settles into 7. The quiet knower.</p>
+</section>
+
+<!-- 6 · THE MOUNTAIN -->
+<section class="chapter" aria-label="The mountain">
+  <div class="eyebrow">The Chinese pillars</div>
+  <p class="line">In BaZi you are Wu. Yang Earth.</p>
+  <p class="line small">The mountain. Born on an Earth Dragon day.</p>
+  <div class="symbol">
+    <svg class="mountain" viewBox="0 0 180 110" role="img" aria-label="A gold mountain">
+      <path class="stroke" d="M8 100 L62 26 L84 54 L104 12 L172 100" />
+      <path class="stroke" d="M96 28 L104 12 L114 30" opacity="0.55"/>
+      <line x1="0" y1="100" x2="180" y2="100" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
+    </svg>
+  </div>
+  <p class="line small italic">Mountains do not chase. They stand, and the weather changes around them.</p>
+  <p class="line mono">2031 TO 2040 · WU XU · DOUBLE EARTH</p>
+  <p class="line small">A decade where the mountain doubles. Your most solid ground yet.</p>
+</section>
+
+<!-- 7 · THE VESSEL -->
+<section class="chapter" aria-label="The vessel of love">
+  <div class="eyebrow">Human Design</div>
+  <p class="line">A pure Generator. 2/4.</p>
+  <p class="line small">Your sacral knows before your mind does. Wait for the yes in your gut.</p>
+  <div class="symbol">
+    <svg class="cross" viewBox="0 0 160 160" role="img" aria-label="The Vessel of Love cross">
+      <circle cx="80" cy="80" r="66" fill="none" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
+      <line x1="80" y1="18" x2="80" y2="142" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="18" y1="80" x2="142" y2="80" stroke="#c9a84c" stroke-width="2"/>
+      <circle cx="80" cy="80" r="7" class="fillg"/>
+      <circle cx="80" cy="18" r="3" class="fillg"/>
+      <circle cx="80" cy="142" r="3" class="fillg"/>
+      <circle cx="18" cy="80" r="3" class="fillg"/>
+      <circle cx="142" cy="80" r="3" class="fillg"/>
+    </svg>
+  </div>
+  <p class="line small">Right Angle Cross of the Vessel of Love.</p>
+  <p class="line small italic">You are not here to find love. You are here to hold it, so others can drink.</p>
+  <p class="line mono">INTEGRATION · 25-51 · 26-44</p>
+</section>
+
+<!-- 8 · THE JOURNEY -->
+<section class="chapter" aria-label="The journey of dashas">
+  <div class="eyebrow">The road so far</div>
+  <p class="line small">Life moves in planetary seasons. Yours look like this.</p>
+  <div class="timeline">
+    <div class="tl-row">
+      <div class="tl-track"><div class="tl-dot"></div><div class="tl-stem"></div></div>
+      <div class="tl-body">
+        <div class="tl-years">UNTIL 2001</div>
+        <div class="tl-name">Saturn</div>
+        <div class="tl-note">A serious childhood. Old before your time.</div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-track"><div class="tl-dot"></div><div class="tl-stem"></div></div>
+      <div class="tl-body">
+        <div class="tl-years">2001 TO 2018</div>
+        <div class="tl-name">Mercury</div>
+        <div class="tl-note">Learning, moving, building the mind.</div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-track"><div class="tl-dot"></div><div class="tl-stem"></div></div>
+      <div class="tl-body">
+        <div class="tl-years">2018 TO 2025</div>
+        <div class="tl-name">Ketu</div>
+        <div class="tl-note">The stripping years. Loss that was secretly a release.</div>
+      </div>
+    </div>
+    <div class="tl-row now">
+      <div class="tl-track"><div class="tl-dot"></div><div class="tl-stem"></div></div>
+      <div class="tl-body">
+        <div class="tl-years">2025 TO 2045 · NOW</div>
+        <div class="tl-name">Venus</div>
+        <div class="tl-note">Twenty years of softening. Venus inside Venus until late 2028: the sweetest opening.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · SATURN CLEARS -->
+<section class="chapter" aria-label="Saturn clears">
+  <div class="eyebrow">The weight lifts</div>
+  <p class="line">Sade Sati came and went, 2011 to 2020.</p>
+  <p class="line small">The panoti ended in March 2025. The next one is far away, around October 2041.</p>
+  <p class="line small italic">The heaviest chapter is behind you. What you carry now, you chose.</p>
+  <p class="line mono">ATMAKARAKA · SATURN 27°23'</p>
+  <p class="line small">The soul's own planet. Your deepest lesson is patience, and you have already paid most of the fee.</p>
+</section>
+
+<!-- 10 · THE RUNE -->
+<section class="chapter" aria-label="Berkana">
+  <div class="eyebrow">Your rune</div>
+  <div class="symbol">
+    <svg class="rune" viewBox="0 0 100 140" role="img" aria-label="Berkana rune">
+      <path class="stroke" d="M30 12 L30 128" stroke-width="3"/>
+      <path class="stroke" d="M30 12 L68 40 L30 70 L68 98 L30 128" stroke-width="3"/>
+    </svg>
+  </div>
+  <p class="line">Berkana. The birch tree.</p>
+  <p class="line small italic">The first tree to grow back after fire. Quiet, complete regrowth.</p>
+</section>
+
+<!-- 11 · TEN OF CUPS -->
+<section class="chapter" aria-label="Ten of cups">
+  <div class="eyebrow">Your card</div>
+  <div class="symbol">
+    <svg class="cups" viewBox="0 0 180 120" role="img" aria-label="Ten cups under an arc">
+      <path d="M14 66 A78 78 0 0 1 166 66" fill="none" stroke="#c9a84c" stroke-width="1.2" opacity="0.7"/>
+      <g fill="none" stroke="#c9a84c" stroke-width="1.8" stroke-linecap="round">
+        <g id="cupRow"></g>
+      </g>
+    </svg>
+  </div>
+  <p class="line">Third decan of Pisces. The Ten of Cups.</p>
+  <p class="line small italic">The card of the completed heart. A full table, at last.</p>
+</section>
+
+<!-- 12 · END -->
+<section class="chapter" id="end" aria-label="The ending">
+  <p class="line keyline">The wheel ends where the forest begins.</p>
+  <div class="forest" aria-hidden="true">
+    <svg viewBox="0 0 400 120" preserveAspectRatio="none">
+      <path d="M0 120 L0 78 L14 78 L20 52 L26 78 L38 78 L46 40 L54 78 L70 78 L76 60 L82 78 L98 78 L108 30 L118 78 L134 78 L140 58 L146 78 L162 78 L172 44 L182 78 L200 78 L208 54 L216 78 L232 78 L242 34 L252 78 L268 78 L274 62 L280 78 L296 78 L306 46 L316 78 L332 78 L338 58 L344 78 L360 78 L370 38 L380 78 L400 78 L400 120 Z"
+        fill="#0d0c0a" stroke="#c9a84c" stroke-width="0.8" opacity="0.9"/>
+    </svg>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>Made for you, Tejas. With an old friendship and a lot of sky.</p>
+  <a href="https://ko-fi.com/shamathakur" target="_blank" rel="noopener">Ko-fi</a>
+  <a href="https://instagram.com/shama_thakur77" target="_blank" rel="noopener">Instagram</a>
+  <a href="https://substack.com/@shamathakur" target="_blank" rel="noopener">Substack</a>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- starfield ---------- */
+  var c = document.getElementById('sky');
+  var ctx = c.getContext('2d');
+  var stars = [], W, H, dpr = Math.min(window.devicePixelRatio||1, 2);
+  var scrollY = 0;
+
+  function size(){
+    W = window.innerWidth; H = window.innerHeight;
+    c.width = W*dpr; c.height = H*dpr;
+    c.style.width = W+'px'; c.style.height = H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function seed(){
+    stars = [];
+    var n = Math.min(150, Math.floor(W*H/6500));
+    for(var i=0;i<n;i++){
+      stars.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        z: 0.25 + Math.random()*0.75,   /* depth: far to near */
+        r: 0.4 + Math.random()*1.3,
+        tw: Math.random()*Math.PI*2,
+        gold: Math.random() < 0.12
+      });
+    }
+  }
+  function draw(t){
+    ctx.clearRect(0,0,W,H);
+    var drift = t*0.004;
+    for(var i=0;i<stars.length;i++){
+      var s = stars[i];
+      /* slow forward drift + parallax against scroll by depth */
+      var y = (s.y + drift*s.z + scrollY*0.12*s.z) % (H+20);
+      if(y<-10) y += H+20;
+      var a = 0.25 + 0.55*s.z;
+      if(!reduce) a *= 0.75 + 0.25*Math.sin(t*0.001 + s.tw);
+      ctx.globalAlpha = a;
+      ctx.fillStyle = s.gold ? '#c9a84c' : '#f5f0e8';
+      ctx.beginPath();
+      ctx.arc(s.x, y, s.r*s.z, 0, 6.2832);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  size(); seed();
+  window.addEventListener('resize', function(){ size(); seed(); }, {passive:true});
+  window.addEventListener('scroll', function(){ scrollY = window.scrollY; }, {passive:true});
+
+  if(reduce){
+    draw(0);
+  } else {
+    (function loop(t){ draw(t||0); requestAnimationFrame(loop); })(0);
+  }
+
+  /* ---------- wheel spokes, ticks, cups ---------- */
+  var spokes = document.getElementById('spokes');
+  var ticks = document.getElementById('ticks');
+  var NS = 'http://www.w3.org/2000/svg';
+  for(var i=0;i<12;i++){
+    var a = i*30*Math.PI/180;
+    var l = document.createElementNS(NS,'line');
+    l.setAttribute('x1', 100+70*Math.sin(a)); l.setAttribute('y1', 100-70*Math.cos(a));
+    l.setAttribute('x2', 100+92*Math.sin(a)); l.setAttribute('y2', 100-92*Math.cos(a));
+    spokes.appendChild(l);
+  }
+  for(var j=0;j<72;j++){
+    var b = j*5*Math.PI/180;
+    var tk = document.createElementNS(NS,'line');
+    tk.setAttribute('x1', 100+88*Math.sin(b)); tk.setAttribute('y1', 100-88*Math.cos(b));
+    tk.setAttribute('x2', 100+92*Math.sin(b)); tk.setAttribute('y2', 100-92*Math.cos(b));
+    ticks.appendChild(tk);
+  }
+  var cupRow = document.getElementById('cupRow');
+  for(var k=0;k<10;k++){
+    var cx = 30 + k*13.5;
+    var g = document.createElementNS(NS,'path');
+    g.setAttribute('d','M'+(cx-4)+' 84 h8 l-1.5 8 h-5 z M'+cx+' 92 v6 M'+(cx-3)+' 100 h6');
+    cupRow.appendChild(g);
+  }
+
+  /* ---------- wheel rotation on scroll ---------- */
+  var wheel = document.getElementById('wheel');
+  var wheelSec = wheel.closest('.chapter');
+  if(!reduce){
+    var spin = function(){
+      var r = wheelSec.getBoundingClientRect();
+      var p = 1 - (r.top + r.height*0.5) / (window.innerHeight + r.height*0.5);
+      p = Math.max(0, Math.min(1, p));
+      /* one slow revolution across the section, settling near the marker */
+      wheel.style.transform = 'rotate(' + (p*300 - 300) + 'deg)';
+      requestAnimationFrame(spin);
+    };
+    requestAnimationFrame(spin);
+  }
+
+  /* ---------- hero fade-in ---------- */
+  setTimeout(function(){ document.getElementById('hero').classList.add('lit'); }, 150);
+
+  /* ---------- chapter reveals ---------- */
+  if(!reduce && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting) e.target.classList.add('lit');
+      });
+    }, {threshold:0.35});
+    document.querySelectorAll('.chapter:not(#hero)').forEach(function(s){ io.observe(s); });
+  } else {
+    document.querySelectorAll('.chapter').forEach(function(s){ s.classList.add('lit'); });
+  }
+})();
+</script>
+</body>
+</html>
